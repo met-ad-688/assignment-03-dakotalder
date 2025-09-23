@@ -1,0 +1,102 @@
+---
+title: Assignment 03
+author:
+  - name: Dakota Alder - dkalder
+    affiliations:
+      - id: bu
+        name: Boston University
+        city: Boston
+        state: MA
+number-sections: true
+date: '2025-9-22'
+format:
+  html:
+    theme: cerulean
+    toc: true
+    toc-depth: 2
+  docx: default
+date-modified: today
+date-format: long
+execute:
+  echo: false
+  eval: false
+  freeze: auto
+---
+
+## Loading the Dataset
+
+```{python}
+
+#| eval: true
+#| echo: true
+#| fig-align: center
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+from pyspark.sql import SparkSession
+import re
+import numpy as np
+import plotly.graph_objects as go
+from pyspark.sql.functions import col, split, explode, regexp_replace, transform, when
+from pyspark.sql import functions as F
+from pyspark.sql.functions import col, monotonically_increasing_id
+
+np.random.seed(42)
+
+pio.renderers.default = "notebook"
+
+# Initialize Spark Session
+spark = SparkSession.builder.appName("LightcastData").getOrCreate()
+
+# Load Data
+df = spark.read.option("header", "true").option("inferSchema", "true").option("multiLine","true").option("escape", "\"").csv("data/lightcast_job_postings.csv")
+df.createOrReplaceTempView("job_postings")
+
+# Show Schema and Sample Data
+#print("---This is Diagnostic check, No need to print it in the final doc---")
+
+#df.printSchema() # comment this line when rendering the submission
+#df.show(5)
+```
+
+## Data Preparation
+
+```{python}
+# Casting Salary and Experience Columns
+df = df.withColumn("SALARY", col("SALARY").cast("float"))\
+  .withColumn("SALARY_FROM", col("SALARY_FROM").cast("float"))\
+  .withColumn("SALARY_TO", col("SALARY_TO").cast("float"))\
+  .withColumn("MAX_YEARS_EXPERIENCE", col("MAX_YEARS_EXPERIENCE").cast("float"))\
+  .withColumn("MIN_YEARS_EXPERIENCE", col("MIN_YEARS_EXPERIENCE").cast("float"))
+
+# Computing Medians for Salary Columns
+def compute_median(sdf, col_name):
+  q = sdf.approxQuantile(col_name, [0.5], .01)
+  return q[0] if q else none
+
+median_from = compute_median(df, "SALARY_FROM")
+median_to = compute_median(df, "SALARY_TO")
+
+print("Medians:", median_from, median_to)
+
+#Inputting missing Salaries, but not experience
+
+df = df.fillna((
+  "SALARY_FROM": median_from,
+  "SALARY_TO", median_to
+))
+
+#Computing Average Salary
+df = df.withColumn("Average Salary", (col("SALARY_FROM")+ col("SALARY_TO"))/2)
+
+#Selecting Required Columns
+exports_cols = [
+  "EDUCATION_LEVELS_NAME",
+  "REMOTE_TYPE_NAME",
+  "MAX_YEARS_EXPERIENCE",
+  "Average_Salary",
+  "LOT_V6_SPECIALIZED_OCCUPATION_NAME"
+]
+
+
+```
