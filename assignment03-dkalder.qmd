@@ -89,7 +89,7 @@ df = df.fillna({
 })
 
 #Computing Average Salary
-df = df.withColumn("Average Salary", (col("SALARY_FROM")+ col("SALARY_TO"))/2)
+df = df.withColumn("Average_Salary", (col("SALARY_FROM") + col("SALARY_TO")/2))
 
 #Selecting Required Columns
 exports_cols = [
@@ -97,7 +97,7 @@ exports_cols = [
   "REMOTE_TYPE_NAME",
   "MAX_YEARS_EXPERIENCE",
   "Average_Salary",
-  "SALARY"
+  "SALARY",
   "LOT_V6_SPECIALIZED_OCCUPATION_NAME"
 ]
 df_selected = df.select(*exports_cols)
