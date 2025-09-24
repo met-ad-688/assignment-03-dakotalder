@@ -43,7 +43,7 @@ from pyspark.sql.functions import col, monotonically_increasing_id
 
 np.random.seed(42)
 
-pio.renderers.default = "notebook+png+svg+html"
+pio.renderers.default = "notebook"
 
 # Initialize Spark Session
 spark = SparkSession.builder.appName("LightcastData").getOrCreate()
@@ -110,6 +110,7 @@ pdf.to_csv("data/cleaned_data.csv", index=False)
 print("Data Cleaning Complete. Rows retained:", len(pdf))
 ```
 
+## Salary Distribution by Employment Type
 ```{python}
 #| eval: true
 #Question 1 Code
@@ -190,5 +191,73 @@ fig.update_layout(
 fig.show()
 fig.write_html("output/Q1.html")
 fig.write_image("output/Q1.svg", width=850, height=500, scale=1)
+
+```
+
+## Salary Distribution by Industry
+```{python}
+#| eval: false
+#| echo: true
+#| fig-align: center
+#Question 2 Code
+
+#Select Industry and Salary Columns
+pdf = df.select("NAICS2_NAME", "SALARY_FROM").toPandas()
+
+
+#Create box plot with Horizontal grid lines
+fig = px.box(
+  pdf,
+  x="NAICS2_NAME",
+  y="SALARY_FROM",
+  title="Salary Distribution by Industry",
+  color_discrete_sequence=["blue"],
+  boxmode="group",
+  points="all",
+)
+
+
+
+fig.update_layout(
+  title=dict(
+      text="Salary Distribution by Industry",
+      font=dict(size=25, family="Arial", color="black", weight="bold")
+  ),
+  xaxis=dict(
+    title=dict(text="Industry", font=dict(size=24, family="Arial", color="black", weight="bold")),
+    tickangle=45,
+    tickfont=dict(size=12, family="Arial", color="black",weight="bold"),
+    showline=True,
+    linewidth=2,
+    linecolor="black",
+    mirror=True,
+    showgrid=False,
+    categoryorder="array",
+    categoryarray=sorted_employment_types.tolist()
+  ),
+  yaxis=dict(
+    title=dict(text="Salary (K $)", font=dict(size=24, family="Arial", color="black", weight="bold")),
+    tickvals=[0,50000,100000,150000,200000,250000,300000,350000,400000,450000,500000],
+    ticktext=["0","50K","100K","150K","200K","250K","300K","350K","400K","450K","500K"],
+    tickfont=dict(size=18, family="Arial", color="black",weight="bold"),
+    showline=True,
+    linewidth=2,
+    linecolor="black",
+    mirror=True,
+    showgrid=False,
+    gridcolor="lightgray",
+    gridwidth=.5
+  )
+  font=dict(family="Arial", size=16, color="black"),
+  boxgap=0.7,
+  plot_bgcolor="white",
+  paper_bgcolor="white",
+  showlegend=False,
+  height=800,
+  width=1000,
+)
+fig.show()
+fig.write_html("output/Q2.html")
+fig.write_image("output/Q2.svg", width=850, height=500, scale=1)
 
 ```
