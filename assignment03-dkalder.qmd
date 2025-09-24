@@ -62,6 +62,7 @@ df.createOrReplaceTempView("job_postings")
 ## Data Preparation
 
 ```{python}
+#| eval: true
 # Casting Salary and Experience Columns
 df = df.withColumn("SALARY", col("SALARY").cast("float"))\
   .withColumn("SALARY_FROM", col("SALARY_FROM").cast("float"))\
@@ -72,7 +73,7 @@ df = df.withColumn("SALARY", col("SALARY").cast("float"))\
 # Computing Medians for Salary Columns
 def compute_median(sdf, col_name):
   q = sdf.approxQuantile(col_name, [0.5], .01)
-  return q[0] if q else none
+  return q[0] if q else None
 
 median_from = compute_median(df, "SALARY_FROM")
 median_to = compute_median(df, "SALARY_TO")
@@ -89,7 +90,7 @@ df = df.fillna({
 })
 
 #Computing Average Salary
-df = df.withColumn("Average_Salary", (col("SALARY_FROM") + col("SALARY_TO")/2))
+df = df.withColumn("Average_Salary", (col("SALARY_FROM") + col("SALARY_TO"))/2)
 
 #Selecting Required Columns
 exports_cols = [
@@ -110,6 +111,7 @@ print("Data Cleaning Complete. Rows retained:", len(pdf))
 ```
 
 ```{python}
+#| eval: true
 #Question 1 Code
 
 #Filter out  missing or zero salaries
@@ -144,5 +146,49 @@ fig = px.box(
   boxmode="group",
   points="all",
 )
+
+
+
+fig.update_layout(
+  title=dict(
+      text="Salary Distribution by Employment Type",
+      font=dict(size=25, family="Arial", color="black", weight="bold")
+  ),
+  xaxis=dict(
+    title=dict(text="Employment Type", font=dict(size=24, family="Arial", color="black", weight="bold")),
+    tickangle=0,
+    tickfont=dict(size=18, family="Arial", color="black",weight="bold"),
+    showline=True,
+    linewidth=2,
+    linecolor="black",
+    mirror=True,
+    showgrid=False,
+    categoryorder="array",
+    categoryarray=sorted_employment_types.tolist()
+  ),
+  yaxis=dict(
+    title=dict(text="Salary (K $)", font=dict(size=24, family="Arial", color="black", weight="bold")),
+    tickvals=[0,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000,220000,240000,260000,280000,300000],
+    ticktext=["0","20K","40K","60K","80K","100K","120K","140K","160K","180K","200K","220K","240K","260K","280K","300K"],
+    tickfont=dict(size=18, family="Arial", color="black",weight="bold"),
+    showline=True,
+    linewidth=2,
+    linecolor="black",
+    mirror=True,
+    showgrid=False,
+    gridcolor="lightgray",
+    gridwidth=.5
+  )
+  font=dict(family="Arial", size=16, color="black"),
+  boxgap=0.7,
+  plot_bgcolor="white",
+  paper_bgcolor="white",
+  showlegend=False,
+  height=500,
+  width=850,
+)
+fig.show()
+fig.write_html("output/Q1.html")
+fig.write_image("output/Q1.svg", width=850, height=500, scale=1)
 
 ```
