@@ -102,7 +102,11 @@ exports_cols = [
 ]
 df_selected = df.select(*exports_cols)
 
+#Save to CSV
+pdf = df_selected.toPandas()
+pdf.to_csv("data/cleaned_data.csv", index=False)
 
+print("Data Cleaning Complete. Rows retained:", len(pdf))
 ```
 
 ```{python}
@@ -111,8 +115,11 @@ df_selected = df.select(*exports_cols)
 #Filter out  missing or zero salaries
 pdf = df.filter(df["SALARY"] > 0).select("EMPLOYMENT_TYPE_NAME", "SALARY").toPandas()
 
+#Filter out null values from Employment Type Name
+pdf = pdf.dropna(subset=["EMPLOYMENT_TYPE_NAME"])
+
 # Clean Employment type names
-pdf["EMPLOYMENT TYPE_NAME"] = pdf["EMPLOYMENT_TYPE_NAME"].apply(lambda x: re.sub(r"[^\x00-\x7F]+","",x))
+pdf["EMPLOYMENT_TYPE_NAME"] = pdf["EMPLOYMENT_TYPE_NAME"].apply(lambda x: re.sub(r"[^\x00-\x7F]+", "", x))
 
 #Compute Median Salary by Employment Type
 median_salaries = pdf.groupby("EMPLOYMENT_TYPE_NAME")["SALARY"].median()
