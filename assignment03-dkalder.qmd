@@ -191,7 +191,7 @@ fig.update_layout(
   height=500,
   width=850,
 )
-fig.show()
+fig.show(renderer="png")
 fig.write_html("output/Q1.html")
 #fig.write_image("output/Q1.svg", width=850, height=500, scale=1)
 
