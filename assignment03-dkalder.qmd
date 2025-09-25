@@ -308,6 +308,7 @@ fig.update_layout(
   xaxis_title="Occupation Name",
   yaxis_title="Median Salary",
   plot_bgcolor="white",
+  paper_bgcolor="#f0fff0",
   xaxis=dict(
     tickangle=-45,
     showline=True,
@@ -327,6 +328,9 @@ fig.write_html("output/Q3.html")
 ## Salary by Education Level
 
 ```{python}
+#| eval: true
+#| echo: true
+#| fig-align: center
 #Create 2 groups of Education Levels
 lower_deg = ["Bachelor's", "Associate", "GED", "No Education Listed", "High School"]
 higher_deg = ["Master's degree", "PhD or professional degree"]
@@ -407,7 +411,9 @@ fig.write_html("output/Q4.html")
 ## Salary by Remote Work Type
 
 ```{python}
-
+#| eval: true
+#| echo: true
+#| fig-align: center
 # Group Remote Types into 3 groups
 df = df.withColumn(
   "REMOTE_GROUP",
@@ -484,13 +490,16 @@ fig.write_html("output/Q5.html")
 ## Salary Histograms for Remote Type Work
 
 ```{python}
+#| eval: true
+#| echo: true
+#| fig-align: center
 #Histograms
 
 fig = px.histogram(
   remote_pd,
   x = "Average_Salary",
   color="REMOTE_GROUP",
-  nbins=50,
+  nbins=40,
   opacity=0.7,
   barmode="overlay",
   color_discrete_sequence=["blue","red","green"],
@@ -517,6 +526,8 @@ fig.update_layout(
     gridwidth=1
   )
 )
+fig.update_xaxes(range=[0, 500000])
+
 
 fig.show()
 fig.write_html("output/Q6.html")
