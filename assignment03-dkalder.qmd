@@ -179,7 +179,7 @@ fig.update_layout(
     showgrid=False,
     gridcolor="lightgray",
     gridwidth=.5
-  )
+  ),
   font=dict(family="Arial", size=16, color="black"),
   boxgap=0.7,
   plot_bgcolor="white",
@@ -190,13 +190,13 @@ fig.update_layout(
 )
 fig.show()
 fig.write_html("output/Q1.html")
-fig.write_image("output/Q1.svg", width=850, height=500, scale=1)
+#fig.write_image("output/Q1.svg", width=850, height=500, scale=1)
 
 ```
 
 ## Salary Distribution by Industry
 ```{python}
-#| eval: false
+#| eval: true
 #| echo: true
 #| fig-align: center
 #Question 2 Code
@@ -247,7 +247,7 @@ fig.update_layout(
     showgrid=False,
     gridcolor="lightgray",
     gridwidth=.5
-  )
+  ),
   font=dict(family="Arial", size=16, color="black"),
   boxgap=0.7,
   plot_bgcolor="white",
@@ -258,6 +258,68 @@ fig.update_layout(
 )
 fig.show()
 fig.write_html("output/Q2.html")
-fig.write_image("output/Q2.svg", width=850, height=500, scale=1)
+#fig.write_image("output/Q2.svg", width=850, height=500, scale=1)
+
+```
+
+## Question 2: Salary Analysis by ONET Occupation Type
+```{python}
+#| eval: true
+#| echo: true
+
+#Query the required data with Spark SQL
+
+onet_type = spark.sql("""
+  SELECT LOT_OCCUPATION_NAME AS Occupation_Name, PERCENTILE(SALARY, 0.5) As Median_Salary, COUNT(*) As Job_Postings
+  FROM job_postings
+  GROUP BY LOT_OCCUPATION_NAME
+  ORDER BY Job_Postings DESC
+  LIMIT 10
+  """)
+
+onet_pd = onet_type.toPandas()
+
+fig = px.scatter(
+  onet_pd,
+  x="Occupation_Name",
+  y="Median_Salary",
+  size="Job_Postings",
+  title="Salary Analysis by Occupation Name (Bubble Chart)",
+  labels={
+    "Occupation_Name": "Occupation Name",
+    "Median_Salary": "Median Salary",
+    "Job_Postings": "Number of Job Postings"
+  },
+  hover_name="Occupation_Name",
+  size_max=60,
+  width=1000,
+  height=600,
+  color="Job_Postings",
+  color_continuous_scale="Plasma"
+)
+
+fig.update_layout(
+  font_family="Arial",
+  font_size=12,
+  title_font_size=24,
+  xaxis_title="Occupation Name",
+  yaxis_title="Median Salary",
+  plot_bgcolor="white",
+  xaxis=dict(
+    tickangle=-45,
+    showline=True,
+    linecolor="black"
+  ),
+  yaxis=dict(
+    showline=True,
+    linecolor="black"
+  )
+)
+fig.show()
+fig.write_html("output/Q3.html")
+
+
+
+
 
 ```
