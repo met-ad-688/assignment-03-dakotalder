@@ -330,7 +330,7 @@ fig.write_html("output/Q3.html")
 ```{python}
 #Create 2 groups of Education Levels
 lower_deg = ["Bachelor's", "Associate", "GED", "No Education Listed", "High School"]
-higher_degree = ["Master's degree", "PhD or professional degree"]
+higher_deg = ["Master's degree", "PhD or professional degree"]
 
 df = df.withColumn(
   "EDU_GROUP",
@@ -352,5 +352,123 @@ df = df.filter(
 
 df_filtered = df.filter(col("EDU_GROUP").isin("Bachelor's or lower", "Master's or PhD"))
 
+edu_cols = [
+  "EDU_GROUP",
+  "MAX_YEARS_EXPERIENCE",
+  "Average_Salary",
+  "LOT_V6_SPECIALIZED_OCCUPATION_NAME"
+]
+
+df_filtered = df_filtered.select(*edu_cols)
 edu_pd = df_filtered.toPandas()
+
+fig = px.scatter(
+  edu_pd,
+  x="MAX_YEARS_EXPERIENCE",
+  y="Average_Salary",
+  color="EDU_GROUP",
+  title="SALARY ANALYSIS BY EDU GROUP AND OCCUPATION",
+  opacity=.7,
+  color_discrete_sequence=["blue", "red"],
+  hover_data=["LOT_V6_SPECIALIZED_OCCUPATION_NAME"],
+  width=1000,
+  height=600,
+)
+
+fig.update_layout(
+  font_family="Arial",
+  font_size=12,
+  title_font_size=24,
+  xaxis_title="Max Years Experience",
+  yaxis_title="Average Salary",
+  legend_title="Education Group",
+  plot_bgcolor="white",
+  xaxis=dict(
+    showline=True,
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1,
+    griddash="dash"
+  ),
+  yaxis=dict(
+    showline=True,
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1,
+    griddash="dash"
+  )
+)
+fig.show()
+fig.write_html("output/Q4.html")
+```
+
+## Salary by Remote Work Type
+
+```{python}
+
+# Group Remote Types into 3 groups
+df = df.withColumn(
+  "REMOTE_GROUP",
+  when(col("REMOTE_TYPE_").rlike("|".join([f"(?i){deg}" for deg in lower_deg])), "Bachelor's or lower")
+  .when(col("EDUCATION_LEVELS_NAME").rlike("|".join([f"(?i){deg}" for deg in higher_deg])), "Master's or PhD")
+  .otherwise("Other")
+)
+
+df = df.withColumn("MAX_YEARS_EXPERIENCE", col("MAX_YEARS_EXPERIENCE").cast("float"))
+df = df.withColumn("Average_Salary", col("Average_Salary").cast("float"))
+
+df = df.filter(
+  col("MAX_YEARS_EXPERIENCE").isNotNull() &
+  col("Average_Salary").isNotNull() &
+  (col("MAX_YEARS_EXPERIENCE") > 0) &
+  (col("Average_Salary") > 0)
+)
+
+
+df_filtered = df.filter(col("EDU_GROUP").isin("Bachelor's or lower", "Master's or PhD"))
+
+edu_cols = [
+  "EDU_GROUP",
+  "MAX_YEARS_EXPERIENCE",
+  "Average_Salary",
+  "LOT_V6_SPECIALIZED_OCCUPATION_NAME"
+]
+
+df_filtered = df_filtered.select(*edu_cols)
+edu_pd = df_filtered.toPandas()
+
+fig = px.scatter(
+  edu_pd,
+  x="MAX_YEARS_EXPERIENCE",
+  y="Average_Salary",
+  color="EDU_GROUP",
+  title="SALARY ANALYSIS BY EDU GROUP AND OCCUPATION",
+  opacity=.7,
+  color_discrete_sequence=["blue", "red"],
+  hover_data=["LOT_V6_SPECIALIZED_OCCUPATION_NAME"],
+  width=1000,
+  height=600,
+)
+
+fig.update_layout(
+  font_family="Arial",
+  font_size=12,
+  title_font_size=24,
+  xaxis_title="Max Years Experience",
+  yaxis_title="Average Salary",
+  legend_title="Education Group",
+  plot_bgcolor="white",
+  xaxis=dict(
+    showline=True,
+    linecolor="black"
+  ),
+  yaxis=dict(
+    showline=True,
+    linecolor="black"
+  )
+)
+fig.show()
+fig.write_html("output/Q4.html")
 ```
