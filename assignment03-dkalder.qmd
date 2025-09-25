@@ -126,8 +126,6 @@ pdf = pdf.dropna(subset=["EMPLOYMENT_TYPE_NAME"])
 # Clean Employment type names
 pdf["EMPLOYMENT_TYPE_NAME"] = pdf["EMPLOYMENT_TYPE_NAME"].apply(lambda x: re.sub(r"[^\x00-\x7F]+", "", x))
 
-# Clean Education names
-pdf["EDUCATION_LEVELS_NAME"] = pdf["EDUCATION_LEVELS_NAME"].apply(lambda x: re.sub(r"[^\x00-\x7F]+", "", x))
 
 #Compute Median Salary by Employment Type
 median_salaries = pdf.groupby("EMPLOYMENT_TYPE_NAME")["SALARY"].median()
@@ -384,6 +382,7 @@ fig.update_layout(
   yaxis_title="Average Salary",
   legend_title="Education Group",
   plot_bgcolor="white",
+  paper_bgcolor="#f0fff0",
   xaxis=dict(
     showline=True,
     linecolor="black",
@@ -412,8 +411,8 @@ fig.write_html("output/Q4.html")
 # Group Remote Types into 3 groups
 df = df.withColumn(
   "REMOTE_GROUP",
-  when(col("REMOTE_TYPE_NAME").rlike("(?i)Remote"), "Remote")
-  .when(col("REMOTE_TYPE_NAME").rlike("(?i)Hybrid"), "Hybrid")
+  when(col("REMOTE_TYPE_NAME").rlike("(?i)hybrid"), "Hybrid")
+  .when(col("REMOTE_TYPE_NAME").rlike("(?i)remote"), "Remote")
   .otherwise("Onsite")
 )
 
@@ -446,7 +445,7 @@ fig = px.scatter(
   color="REMOTE_GROUP",
   title="SALARY ANALYSIS BY REMOTE WORK TYPE",
   opacity=.7,
-  color_discrete_sequence=["blue", "red"],
+  color_discrete_sequence=["blue", "red", "green"],
   hover_data=["LOT_V6_SPECIALIZED_OCCUPATION_NAME"],
   width=1000,
   height=600,
@@ -460,6 +459,7 @@ fig.update_layout(
   yaxis_title="Average Salary",
   legend_title="Remote Work Type",
   plot_bgcolor="white",
+  paper_bgcolor="#f0fff0",
   xaxis=dict(
     showline=True,
     linecolor="black",
@@ -479,4 +479,47 @@ fig.update_layout(
 )
 fig.show()
 fig.write_html("output/Q5.html")
+```
+
+## Salary Histograms for Remote Type Work
+
+```{python}
+#Histograms
+
+fig = px.histogram(
+  remote_pd,
+  x = "Average_Salary",
+  color="REMOTE_GROUP",
+  nbins=50,
+  opacity=0.7,
+  barmode="overlay",
+  color_discrete_sequence=["blue","red","green"],
+  title="Histogram of Salary Distribution"
+)
+
+fig.update_layout(
+  xaxis_title="Average Salary",
+  yaxis_title="Count",
+  plot_bgcolor="white",
+  paper_bgcolor="#f0fff0",
+  xaxis=dict(
+    showline=True,
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1
+  ),
+  yaxis=dict(
+    showline=True,
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1
+  )
+)
+
+fig.show()
+fig.write_html("output/Q6.html")
+
+
 ```
