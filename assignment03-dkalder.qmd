@@ -111,6 +111,7 @@ pdf.to_csv("data/cleaned_data.csv", index=False)
 print("Data Cleaning Complete. Rows retained:", len(pdf))
 ```
 
+
 ## Salary Distribution by Employment Type
 ```{python}
 #| eval: true
@@ -339,7 +340,7 @@ df = df.withColumn(
   .otherwise("Other")
 )
 
-df = df.withColumn("MAX_YEARS_EXPERIENCE", col("MAX_YEARS_EXPERIENCE").cast("float"))
+
 df = df.withColumn("Average_Salary", col("Average_Salary").cast("float"))
 
 df = df.filter(
@@ -411,12 +412,11 @@ fig.write_html("output/Q4.html")
 # Group Remote Types into 3 groups
 df = df.withColumn(
   "REMOTE_GROUP",
-  when(col("REMOTE_TYPE_").rlike("|".join([f"(?i){deg}" for deg in lower_deg])), "Bachelor's or lower")
-  .when(col("EDUCATION_LEVELS_NAME").rlike("|".join([f"(?i){deg}" for deg in higher_deg])), "Master's or PhD")
-  .otherwise("Other")
+  when(col("REMOTE_TYPE_NAME").rlike("(?i)Remote"), "Remote")
+  .when(col("REMOTE_TYPE_NAME").rlike("(?i)Hybrid"), "Hybrid")
+  .otherwise("Onsite")
 )
 
-df = df.withColumn("MAX_YEARS_EXPERIENCE", col("MAX_YEARS_EXPERIENCE").cast("float"))
 df = df.withColumn("Average_Salary", col("Average_Salary").cast("float"))
 
 df = df.filter(
@@ -427,24 +427,24 @@ df = df.filter(
 )
 
 
-df_filtered = df.filter(col("EDU_GROUP").isin("Bachelor's or lower", "Master's or PhD"))
+remote_filtered = df.filter(col("REMOTE_GROUP").isin("Remote", "Hybrid", "Onsite"))
 
-edu_cols = [
-  "EDU_GROUP",
+remote_cols = [
+  "REMOTE_GROUP",
   "MAX_YEARS_EXPERIENCE",
   "Average_Salary",
   "LOT_V6_SPECIALIZED_OCCUPATION_NAME"
 ]
 
-df_filtered = df_filtered.select(*edu_cols)
-edu_pd = df_filtered.toPandas()
+remote_filtered = remote_filtered.select(*remote_cols)
+remote_pd = remote_filtered.toPandas()
 
 fig = px.scatter(
-  edu_pd,
+  remote_pd,
   x="MAX_YEARS_EXPERIENCE",
   y="Average_Salary",
-  color="EDU_GROUP",
-  title="SALARY ANALYSIS BY EDU GROUP AND OCCUPATION",
+  color="REMOTE_GROUP",
+  title="SALARY ANALYSIS BY REMOTE WORK TYPE",
   opacity=.7,
   color_discrete_sequence=["blue", "red"],
   hover_data=["LOT_V6_SPECIALIZED_OCCUPATION_NAME"],
@@ -458,17 +458,25 @@ fig.update_layout(
   title_font_size=24,
   xaxis_title="Max Years Experience",
   yaxis_title="Average Salary",
-  legend_title="Education Group",
+  legend_title="Remote Work Type",
   plot_bgcolor="white",
   xaxis=dict(
     showline=True,
-    linecolor="black"
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1,
+    griddash="dash"
   ),
   yaxis=dict(
     showline=True,
-    linecolor="black"
+    linecolor="black",
+    showgrid=True,
+    gridcolor="lightgray",
+    gridwidth=1,
+    griddash="dash"
   )
 )
 fig.show()
-fig.write_html("output/Q4.html")
+fig.write_html("output/Q5.html")
 ```
